@@ -13,8 +13,8 @@ MongoClient.connect(url, (error, client) => {
     const db = client.db(dbname);
 
     db.collection('Todos').insertOne({
-        status: "Active Green",
-        location: "XX"
+        status: "Active Brown",
+        register: false,
     }, (error, res) => {
         if (error) {
             console.log(error);
