@@ -4,7 +4,8 @@
     "description": "Node REstful",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "mocha \"./{,!(node_modules)/**/}*.test.js\"",
+        "watch-test": "nodemon --exec \"npm test\""
     },
     "dependencies": {
         "mongodb": "^3.1.11",
@@ -12,8 +13,14 @@
         "express": "^4.16.4",
         "nodemon": "^1.18.9",
         "hbs": "^4.0.1",
-        "body-parser": "^1.18.3"
+        "body-parser": "^1.18.3",
+        "supertest": "^3.4.1"
 
+    },
+    "devDependencies": {
+        "mocha": "^5.2.0",
+        "chai": "^4.2.0",
+        "expect": "^1.20.2"
     },
     "keywords": [
         "API"
