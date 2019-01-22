@@ -4,8 +4,12 @@
     "description": "Node REstful",
     "main": "index.js",
     "scripts": {
+        "start": "node server/server.js",
         "test": "mocha \"./{,!(node_modules)/**/}*.test.js\"",
         "watch-test": "nodemon --exec \"npm test\""
+    },
+    "engines": {
+        "node": "10.15.0"
     },
     "dependencies": {
         "mongodb": "^3.1.11",
