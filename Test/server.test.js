@@ -4,8 +4,20 @@ const request = require('supertest');
 const { app } = require('./../server/server');
 const { Todo } = require('./../server/models/todo');
 
+const todos = [{
+        text: "We are testing"
+    },
+    {
+        text: "Silence is golden"
+    }
+];
+
+console.log(todos.length);
+
 beforeEach((done) => {
-    Todo.deleteMany({}).then(() => done());
+    Todo.deleteMany({}).then(() => {
+        return Todo.insertMany(todos)
+    }).then(() => done());
 })
 
 describe('POST /todos', () => {
@@ -24,7 +36,7 @@ describe('POST /todos', () => {
                     return done(err);
                 }
 
-                Todo.find()
+                Todo.find({ text })
                     .then((res) => {
                         expect(res.length).toBe(1);
                         expect(res[0].text).toBe(text)
@@ -44,7 +56,7 @@ describe('POST /todos', () => {
         request(app)
             .post('/todos')
             .send({})
-            .expect(200)
+            .expect(400)
             .end((err, res) => {
                 if (err) {
                     return done(err)
@@ -53,7 +65,7 @@ describe('POST /todos', () => {
 
         Todo.find()
             .then((res) => {
-                expect(res.length).toBe(0);
+                expect(res.length).toBe(2);
                 done();
             })
             .catch((err) => {
@@ -61,5 +73,16 @@ describe('POST /todos', () => {
                     return done(err);
                 }
             })
+    })
+
+    it("should GET all todos", (done) => {
+        request(app)
+            .get('/todos')
+            .expect(200)
+            .expect((res) => {
+                expect(todos.length).toBe(2)
+                console.log(JSON.stringify(res.body, undefined, 2));
+            })
+            .end(done)
     })
 })
