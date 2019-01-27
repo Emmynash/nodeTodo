@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { mongoose } = require('./db/mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -16,6 +17,7 @@ app.post('/todos', (req, res) => {
     let todo = new Todo({
         text: req.body.text
     })
+
 
     todo.save().then((result) => {
         res.send(result);
@@ -62,6 +64,34 @@ app.delete('/todos/:id', (req, res) => {
         })
         .catch((error) => res.status(400).send());
 })
+
+app.patch('/todos/:id', (req, res) => {
+    let id = req.params.id
+    let body = _.pick(req.body, ['text', 'complete']);
+
+    if (!ObjectID.isValid) {
+        return res.status(404).send();
+    }
+
+    if (_.isBoolean(body.complete) && body.complete) {
+        body.completedat = new Date().getTime();
+    } else {
+        body.complete = false;
+        body.completedat = null;
+    }
+    Todo.findByIdAndUpdate(id, { $set: body }, { new: true })
+        .then((todo) => {
+            if (!todo) {
+                return res.status(404).send();
+            }
+
+            res.send({ todo })
+        })
+        .catch((err) => {
+            res.status(400).send();
+        })
+})
+
 
 app.listen(port, (error) => {
     if (error) {
