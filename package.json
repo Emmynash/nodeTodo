@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "start": "node server/server.js",
-        "test": "mocha \"./{,!(node_modules)/**/}*.test.js\"",
+        "test": "export NODE_ENV=test || SET \"NODE_ENV = test\" && mocha \"./{,!(node_modules)/**/}*.test.js\"",
         "watch-test": "nodemon --exec \"npm test\""
     },
     "engines": {
