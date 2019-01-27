@@ -151,3 +151,61 @@ describe('DELETE Todos/:id', () => {
     });
 
 })
+
+describe("PATCH todos/:id", () => {
+    it.only("Should updated todos", (done) => {
+        let hexId = todos[0]._id.toHexString()
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo._id).toBe(hexId)
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                Todo.findByIdAndUpdate(hexId, {
+                        $set: {
+                            complete: true,
+                            text: "We survive"
+                        }
+                    }, { new: true })
+                    .then((res) => {
+                        if (!res) {
+                            res.status(404).send();
+                        }
+                        expect(res).toExist();
+                        done();
+                    })
+                    .catch((err) => done(err));
+            })
+
+    })
+
+    it.only("Should update todo", (done) => {
+        let hexId = todos[0]._id.toHexString()
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .expect(200)
+            .send({
+                text: "Todo Patch",
+                complete: true
+            })
+            .expect((res) => {
+                expect(res.body.todo.text).toBe("Todo Patch");
+                expect(res.body.todo.complete).toBe(true);
+                expect(res.body.todo.completedat).toBeA('number');
+
+            })
+            .end((err) => done(err))
+
+    })
+
+    it("Should return 404 for non object id", (done) => {
+        request(app)
+            .patch('/todos/234781')
+            .expect(404)
+            .end(done)
+    });
+})
