@@ -118,12 +118,13 @@ describe('DELETE Todos/:id', () => {
 
     it.only("Should delete a todo", (done) => {
         let hexId = todos[0]._id.toHexString()
+            // let reqId = req.params.id;
         request(app)
             .delete(`/todos/${hexId}`)
             .expect(200)
             .expect((res) => {
-                console.log(res.body.todo);
-                expect(res.body.todo._id).toBe(hexId);
+                console.log(res.body.todo._id);
+                expect((res.body.todo._id).toHexString).toBe(hexId);
             })
             .end((err, res) => {
                 if (err) {
