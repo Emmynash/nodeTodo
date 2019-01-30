@@ -124,7 +124,7 @@ describe('DELETE Todos/:id', () => {
             .expect(200)
             .expect((res) => {
                 console.log(res.body.todo._id);
-                expect((res.body.todo._id).toHexString).toBe(hexId);
+                expect(JSON.stringify(res.body.todo._id)).toBe(JSON.stringify(hexId));
             })
             .end((err, res) => {
                 if (err) {
