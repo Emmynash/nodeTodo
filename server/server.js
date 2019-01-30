@@ -20,6 +20,7 @@ const { ObjectID } = require('mongodb');
 
 const { Todo } = require('./models/todo');
 const { User } = require('./models/user');
+const { authenticate } = require('./Middleware/authenticate');
 const app = express();
 
 const port = process.env.PORT;
@@ -122,6 +123,14 @@ app.post('/users', (req, res) => {
             console.log(err);
         });
 });
+
+
+// middleware for authentication
+
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
+}, ((e) => console.log(e)));
 
 
 app.listen(port, (error) => {

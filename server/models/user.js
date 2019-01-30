@@ -19,6 +19,7 @@ var UserSchema = new mongoose.Schema({
         }
     },
 
+
     password: {
         required: true,
         type: String,
@@ -55,6 +56,23 @@ UserSchema.methods.generateAuthToken = function() {
             return token;
         })
         .catch((err) => console.log(err));
+};
+
+UserSchema.statics.findByToken = function(token) {
+    var User = this;
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, "R00tq26")
+    } catch (error) {
+        return Promise.reject();
+    }
+    return User.findOne({
+        _id: decoded._id,
+        "tokens.token": token,
+        "tokens.access": "auth"
+    })
+
 }
 
 let User = mongoose.model("User", UserSchema)
