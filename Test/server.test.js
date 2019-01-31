@@ -1,30 +1,20 @@
 const expect = require('expect');
 const request = require('supertest');
-const { ObjectID } = require('mongodb');
 
 const { app } = require('./../server/server');
 const { Todo } = require('./../server/models/todo');
+const { populateTodos, todos, users, populateUsers } = require('./seed/seed');
 
-const todos = [{
-        _id: new ObjectID(),
-        text: "We are testing"
-    },
-    {
-        _id: new ObjectID(),
-        text: "Silence is golden"
-    }
-];
 
 console.log(todos.length);
 
-beforeEach((done) => {
-    Todo.deleteMany({}).then(() => {
-        return Todo.insertMany(todos)
-    }).then(() => done());
-})
+beforeEach(populateUsers);
+beforeEach(populateTodos);
 
 describe('POST /todos', () => {
     it('should send a post request', (done) => {
+        // this.timeout(300);
+        // setTimeout(done, 300);
         let text = "testing post request"
 
         request(app)
@@ -114,17 +104,17 @@ describe('GET todos/:id routes', () => {
     });
 })
 
-describe('DELETE Todos/:id', () => {
+describe.only('DELETE Todos/:id', () => {
+    let hexId = todos[0]._id.toHexString();
 
-    it.only("Should delete a todo", (done) => {
-        let hexId = todos[0]._id.toHexString()
-            // let reqId = req.params.id;
+    it("Should delete a todo", (done) => {
+        // let reqId = req.params.id;
         request(app)
             .delete(`/todos/${hexId}`)
             .expect(200)
             .expect((res) => {
                 console.log(res.body.todo._id);
-                expect(JSON.stringify(res.body.todo._id)).toBe(JSON.stringify(hexId));
+                expect((res.body.todo._id).toString()).toBe(hexId);
             })
             .end((err, res) => {
                 if (err) {
@@ -144,17 +134,17 @@ describe('DELETE Todos/:id', () => {
             .expect(404)
             .end(done)
     });
-    it("Should return 404 for non object id", (done) => {
+    it("Should return 400 for non object id", (done) => {
         request(app)
             .delete('/todos/234781')
-            .expect(404)
+            .expect(400)
             .end(done)
     });
 
 })
 
 describe("PATCH todos/:id", () => {
-    it.only("Should updated todos", (done) => {
+    it("Should update todos", (done) => {
         let hexId = todos[0]._id.toHexString()
         request(app)
             .patch(`/todos/${hexId}`)
@@ -184,7 +174,7 @@ describe("PATCH todos/:id", () => {
 
     })
 
-    it.only("Should update todo", (done) => {
+    it("Should update todo", (done) => {
         let hexId = todos[0]._id.toHexString()
         request(app)
             .patch(`/todos/${hexId}`)
@@ -203,10 +193,10 @@ describe("PATCH todos/:id", () => {
 
     })
 
-    it("Should return 404 for non object id", (done) => {
+    it("Should return 400 for non object id", (done) => {
         request(app)
             .patch('/todos/234781')
-            .expect(404)
+            .expect(400)
             .end(done)
     });
 })
