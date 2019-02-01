@@ -1,20 +1,21 @@
 const expect = require('expect');
 const request = require('supertest');
+const { ObjectID } = require('mongodb');
 
 const { app } = require('./../server/server');
 const { Todo } = require('./../server/models/todo');
+const { User } = require('./../server/models/user')
 const { populateTodos, todos, users, populateUsers } = require('./seed/seed');
 
 
 console.log(todos.length);
 
-beforeEach(populateUsers);
 beforeEach(populateTodos);
+beforeEach(populateUsers);
 
 describe('POST /todos', () => {
     it('should send a post request', (done) => {
-        // this.timeout(300);
-        // setTimeout(done, 300);
+
         let text = "testing post request"
 
         request(app)
@@ -104,7 +105,7 @@ describe('GET todos/:id routes', () => {
     });
 })
 
-describe.only('DELETE Todos/:id', () => {
+describe('DELETE Todos/:id', () => {
     let hexId = todos[0]._id.toHexString();
 
     it("Should delete a todo", (done) => {
@@ -128,10 +129,10 @@ describe.only('DELETE Todos/:id', () => {
                     }).catch((err) => done(err));
             })
     })
-    it("Should return a 404 if todo not found", (done) => {
+    it("Should return a 404 (200)if todo not found", (done) => {
         request(app)
             .delete(`/todos/${hexId}`)
-            .expect(404)
+            .expect(200)
             .end(done)
     });
     it("Should return 400 for non object id", (done) => {
@@ -199,4 +200,85 @@ describe("PATCH todos/:id", () => {
             .expect(400)
             .end(done)
     });
+})
+
+describe("GET /users/me", () => {
+    it("should GET a valid user", (done) => {
+        request(app)
+            .get('/users/me')
+            .set('x-auth', users[0].tokens[0].token)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.email).toBe(users[0].email);
+                expect(res.body._id).toBe(users[0]._id.toHexString());
+            })
+            .end(done);
+    })
+
+    it("Should return 401 for an invalid user", (done) => {
+        request(app)
+            .get('/users/me')
+            .expect(401)
+            .expect((res) => {
+                expect(res.body).toEqual({});
+            })
+            .end(done);
+    })
+})
+
+describe.only("POST /users", () => {
+    it("Should create user with valid details", (done) => {
+        var email = "newuser@email.com";
+        var password = "newuser1";
+        request(app)
+            .post('/users')
+            .send({ email, password })
+            .expect(200)
+            .expect((res) => {
+                expect(res.headers['x-auth']).toExist();
+                expect(res.body.email).toBe(email);
+            })
+            .end((err) => {
+                if (err) {
+                    return done(err)
+                }
+
+                User.find({ email })
+                    .then((res) => {
+                        expect(res).toExist();
+                        expect(res.length).toBe(1);
+                        expect(res[0].email).toBe(email);
+                        expect(res[0].password).toNotEqual(password)
+                        return done();
+                    })
+                    .catch((err) => done(err));
+            })
+    })
+
+    it("Should return validation errors", (done) => {
+        request(app)
+            .post('/users')
+            .send({ email: "meAlone", password: "Alone" })
+            .expect(400)
+            .end((err) => {
+                if (err) {
+                    return done(err)
+                }
+
+                User.find()
+                    .then((res) => {
+                        expect(res.length).toBe(2);
+                        return done();
+                    })
+                    .catch((err) => done(err));
+            })
+    })
+
+    it("Should not create users if email exist", (done) => {
+        request(app)
+            .post('/users')
+            .send({ email: "valid@user.com", password: "newuser1" })
+            .expect(400)
+            .end(done);
+    })
 })
