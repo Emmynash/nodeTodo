@@ -18,17 +18,23 @@ const users = [{
     {
         _id: invalidUserId,
         email: "invalid@user.com",
-        password: "invaliduser"
+        password: "invaliduser",
+        tokens: [{
+            access: "auth",
+            token: jwt.sign({ _id: invalidUserId, access: "auth" }, "R00tq26").toString()
+        }]
     }
 ]
 
 const todos = [{
         _id: new ObjectID(),
-        text: "We are testing"
+        text: "We are testing",
+        _author: validUserId
     },
     {
         _id: new ObjectID(),
-        text: "Silence is golden"
+        text: "Silence is golden",
+        _author: invalidUserId
     }
 ];
 

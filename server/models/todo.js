@@ -14,6 +14,10 @@ let Todo = mongoose.model('Todo', {
     complete: {
         type: Boolean,
         default: false
+    },
+    _author: {
+        required: true,
+        type: mongoose.Schema.Types.ObjectId
     }
 });
 
