@@ -119,7 +119,7 @@ describe('GET todos/:id routes', () => {
         });
     }) /
 
-    describe.only('DELETE Todos/:id', () => {
+    describe('DELETE Todos/:id', () => {
         let hexId = todos[0]._id.toHexString();
 
         it("Should delete a todo", (done) => {
@@ -169,7 +169,7 @@ describe('GET todos/:id routes', () => {
 
     })
 
-describe.only("PATCH todos/:id", () => {
+describe("PATCH todos/:id", () => {
     it("Should update todos", (done) => {
         let hexId = todos[0]._id.toHexString()
         request(app)

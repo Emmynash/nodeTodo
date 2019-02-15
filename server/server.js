@@ -39,22 +39,28 @@ app.get('/todos', authenticate, (req, res) => {
             res.status(400).send(err)
         })
 })
-app.get('/todos/:id', authenticate, (req, res) => {
-    id = req.params.id;
-    if (!ObjectID.isValid(id)) {
-        res.status(404).send();
-    }
-    Todo.findOne({
+app.get('/todos/:id', authenticate, async(req, res) => {
+
+    try {
+        id = req.params.id;
+        if (!ObjectID.isValid(id)) {
+            res.status(404).send();
+        }
+
+        const todo = await Todo.findOne({
             _id: id,
             _author: req.user._id
-        })
-        .then((todo) => {
-            if (!todo) {
-                return res.status(404).send()
-            }
-            res.send({ todo });
-        })
-        .catch((err) => res.status(400).send());
+        });
+
+        if (!todo) {
+            return res.status(404).send()
+        }
+        res.send({ todo });
+
+    } catch (error) {
+        res.status(400).send()
+    }
+
 })
 
 app.delete('/todos/:id', authenticate, (req, res) => {
@@ -106,7 +112,18 @@ app.patch('/todos/:id', authenticate, (req, res) => {
         })
 })
 
-app.post('/users', (req, res) => {
+app.post('/users', async(req, res) => {
+    // let body = _.pick(req.body, ['email', 'password'])
+    // let user = new User(body)
+
+    // try {
+    //     await user.save();
+    //     const token = await user.generateAuthToken();
+    //     res.header('x-auth', token).send(user);
+    // } catch (error) {
+    //     res.status(400).send(err);
+    // }
+
     let body = _.pick(req.body, ['email', 'password'])
     let user = new User(body)
     user.save()
@@ -133,29 +150,26 @@ app.get('/users/me', authenticate, (req, res) => {
 }, ((e) => console.log(e)));
 
 // Post users/login
-app.post('/users/login', (req, res) => {
-    let body = _.pick(req.body, ['email', 'password'])
-
-    User.findByCredentials(body.email, body.password).then((result) => {
-        return result.generateAuthToken().then((token) => {
-            res.header('x-auth', token).send(result);
-        });
-        console.log(result);
-    }).catch((err) => {
-        res.status(400).send(err);
-        // console.log(err);
-    });
-
+app.post('/users/login', async(req, res) => {
+    try {
+        let body = _.pick(req.body, ['email', 'password'])
+        const user = await User.findByCredentials(body.email, body.password);
+        const token = await user.generateAuthToken();
+        res.header('x-auth', token).send(user);
+    } catch (error) {
+        res.status(400).send(error);
+    }
 });
 
-app.delete('/users/me/token', authenticate, (req, res) => {
-    req.user.removeToken(req.token)
-        .then(() => {
-            res.status(200).send()
-        }, (err) => {
-            res.status(400).send();
-            console.log(err);
-        })
+app.delete('/users/me/token', authenticate, async(req, res) => {
+
+    try {
+        await req.user.removeToken(req.token)
+        res.status(200).send()
+    } catch (error) {
+        res.status(400).send();
+    }
+
 })
 
 
